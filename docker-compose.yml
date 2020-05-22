@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.2
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+  
+  # proxy:
+  #   image: proxy:latest
+  #   container_name: proxy
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.proxy.rule=Host(`proxy`)"
+  #     - "traefik.http.services.proxy.loadbalancer.server.scheme=h2c"
+  #   expose:
+  #     - 50051
+  #   hostname: proxy
+
+  auth_service:
+    image: auth_service:latest
+    container_name: auth_service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth_service.rule=Host(`auth_service`)"
+      - "traefik.http.services.auth_service.loadbalancer.server.scheme=h2c"
+    expose:
+      - 5000
+    hostname: auth_service
+    depends_on: 
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    expose: 
+      - 6379
+    hostname: redis
