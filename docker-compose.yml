@@ -26,22 +26,25 @@ services:
   #     - 50051
   #   hostname: proxy
 
-  auth_service:
-    image: auth_service:latest
-    container_name: auth_service
+  authservice:
+    image: authservice:latest
+    container_name: authservice
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.auth_service.rule=Host(`auth_service`)"
-      - "traefik.http.services.auth_service.loadbalancer.server.scheme=h2c"
+      - "traefik.http.routers.authservice.rule=Host(`authservice`)"
+      - "traefik.http.services.authservice.loadbalancer.server.scheme=h2c"
     expose:
       - 5000
-    hostname: auth_service
+    hostname: authservice
     depends_on: 
       - redis
 
   redis:
     image: redis:latest
     container_name: redis
-    expose: 
-      - 6379
+    ports:
+      - 6379:6379
     hostname: redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redis.rule=Host(`redis`)"
