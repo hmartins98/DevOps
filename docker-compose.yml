@@ -4,6 +4,7 @@ services:
   reverse-proxy:
     # The official v2 Traefik docker image
     image: traefik:v2.2
+    container_name: traefik
     # Enables the web UI and tells Traefik to listen to docker
     command: --api.insecure=true --providers.docker
     ports:
@@ -33,18 +34,63 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.authservice.rule=Host(`authservice`)"
       - "traefik.http.services.authservice.loadbalancer.server.scheme=h2c"
-    expose:
-      - 5000
+    ports:
+      - 5000:5000
     hostname: authservice
     depends_on: 
-      - redis
+      # - redis
+      - postgres
 
-  redis:
-    image: redis:latest
-    container_name: redis
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #     - 6379:6379
+  #   volumes: 
+  #     - cache_data:/data
+  #   hostname: redis
+  #   labels:
+  #     - "traefik.enable=false"
+  #     - "traefik.http.services.redis.loadbalancer.server.scheme=http"
+  #     # - "traefik.http.routers.redis.rule=Host(`redis`)"
+  
+  postgres:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
     ports:
-      - 6379:6379
-    hostname: redis
-    labels:
+      - 5432:5432
+    hostname: postgres
+    environment: 
+      - POSTGRES_PASSWORD=password
+    labels: 
       - "traefik.enable=true"
-      - "traefik.http.routers.redis.rule=Host(`redis`)"
+      - "traefik.http.routers.postgres.rule=Host(`postgres`)"
+      - "traefik.http.services.postgres.loadbalancer.server.scheme=http"
+  
+  postgres_admin:
+    image: dpage/pgadmin4:latest
+    container_name: postgres_admin
+    volumes: 
+      - db_data_admin:/var/lib/pgadmin
+    ports:
+      - 5433:80
+    hostname: postgres_admin
+    environment: 
+      - PGADMIN_DEFAULT_EMAIL=hugo.alex.val.martins@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=password
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.postgres_admin.rule=Host(`postgres_admin`)"
+      - "traefik.http.services.postgres_admin.loadbalancer.server.scheme=http"
+    depends_on: 
+      - postgres
+
+volumes:
+  db_data:
+    driver: local
+  db_data_admin:
+    driver: local
+  # cache_data:
+  #   driver: local
