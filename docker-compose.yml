@@ -1,20 +1,20 @@
 version: '3'
 
 services:
-  reverse-proxy:
-    # The official v2 Traefik docker image
-    image: traefik:v2.2
-    container_name: traefik
-    # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
-    ports:
-      # The HTTP port
-      - "80:80"
-      # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
-    volumes:
-      # So that Traefik can listen to the Docker events
-      - /var/run/docker.sock:/var/run/docker.sock
+  # reverse-proxy:
+  #   # The official v2 Traefik docker image
+  #   image: traefik:v2.2
+  #   container_name: traefik
+  #   # Enables the web UI and tells Traefik to listen to docker
+  #   command: --api.insecure=true --providers.docker
+  #   ports:
+  #     # The HTTP port
+  #     - "80:80"
+  #     # The Web UI (enabled by --api.insecure=true)
+  #     - "8080:8080"
+  #   volumes:
+  #     # So that Traefik can listen to the Docker events
+  #     - /var/run/docker.sock:/var/run/docker.sock
   
   # proxy:
   #   image: proxy:latest
@@ -27,19 +27,19 @@ services:
   #     - 50051
   #   hostname: proxy
 
-  authservice:
-    image: authservice:latest
-    container_name: authservice
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.authservice.rule=Host(`authservice`)"
-      - "traefik.http.services.authservice.loadbalancer.server.scheme=h2c"
-    ports:
-      - 5000:5000
-    hostname: authservice
-    depends_on: 
-      # - redis
-      - postgres
+  # authservice:
+  #   image: authservice:latest
+  #   container_name: authservice
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.authservice.rule=Host(`authservice`)"
+  #     - "traefik.http.services.authservice.loadbalancer.server.scheme=h2c"
+  #   ports:
+  #     - 5000:5000
+  #   hostname: authservice
+  #   depends_on: 
+  #     # - redis
+  #     - postgres
 
   # redis:
   #   image: redis:latest
@@ -64,10 +64,10 @@ services:
     hostname: postgres
     environment: 
       - POSTGRES_PASSWORD=password
-    labels: 
-      - "traefik.enable=true"
-      - "traefik.http.routers.postgres.rule=Host(`postgres`)"
-      - "traefik.http.services.postgres.loadbalancer.server.scheme=http"
+    # labels: 
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.postgres.rule=Host(`postgres`)"
+    #   - "traefik.http.services.postgres.loadbalancer.server.scheme=http"
   
   postgres_admin:
     image: dpage/pgadmin4:latest
@@ -80,10 +80,10 @@ services:
     environment: 
       - PGADMIN_DEFAULT_EMAIL=hugo.alex.val.martins@gmail.com
       - PGADMIN_DEFAULT_PASSWORD=password
-    labels: 
-      - "traefik.enable=true"
-      - "traefik.http.routers.postgres_admin.rule=Host(`postgres_admin`)"
-      - "traefik.http.services.postgres_admin.loadbalancer.server.scheme=http"
+    # labels: 
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.postgres_admin.rule=Host(`postgres_admin`)"
+    #   - "traefik.http.services.postgres_admin.loadbalancer.server.scheme=http"
     depends_on: 
       - postgres
 
